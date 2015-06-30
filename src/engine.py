@@ -1,5 +1,5 @@
 """Contains the logic for the game engine. Board,
-pieces, and player classes."""
+pieces, player, and game classes."""
 # stdlib imports
 from enum import Enum
 from copy import deepcopy
@@ -73,7 +73,7 @@ class Pawn(Piece):
                 moves += [self.position[0], self.position[1] + 2],
             # Can move one space ahead if empty
             if board.check_if_empty([self.position[0], self.position[1] + 1]):
-                # end of board, promition
+                # end of board, promotion
                 if self.position[1] + 1 == 7:
                     moves += [self.position[0], "Q"],
                     moves += [self.position[0], "N"],
@@ -85,19 +85,19 @@ class Pawn(Piece):
             if board.check_if_opponent([self.position[0] + 1,
                                         self.position[1] + 1], self.owner):
                 if self.position[1] + 1 == 7:
-                    moves += [self.position[0], "Q"],
-                    moves += [self.position[0], "N"],
-                    moves += [self.position[0], "R"],
-                    moves += [self.position[0], "B"],
+                    moves += [self.position[0] + 1, "Q"],
+                    moves += [self.position[0] + 1, "N"],
+                    moves += [self.position[0] + 1, "R"],
+                    moves += [self.position[0] + 1, "B"],
                 else:
                     moves += [self.position[0] + 1, self.position[1] + 1],
             if (board.check_if_opponent([self.position[0] - 1,
                                          self.position[1] + 1], self.owner)):
                 if self.position[1] + 1 == 7:
-                    moves += [self.position[0], "Q"],
-                    moves += [self.position[0], "N"],
-                    moves += [self.position[0], "R"],
-                    moves += [self.position[0], "B"],
+                    moves += [self.position[0] - 1, "Q"],
+                    moves += [self.position[0] - 1, "N"],
+                    moves += [self.position[0] - 1, "R"],
+                    moves += [self.position[0] - 1, "B"],
                 else:
                     moves += [self.position[0] - 1, self.position[1] + 1],
             # check if there is an en_passant opportunity
@@ -109,7 +109,6 @@ class Pawn(Piece):
                 elif board.en_passant.position == [self.position[0]-1,
                                                    self.position[1]]:
                     moves += [self.position[0]-1, self.position[1]+1],
-
 
         if self.owner.color == Color.W:
             if (self.first_move and
@@ -131,19 +130,19 @@ class Pawn(Piece):
             if board.check_if_opponent([self.position[0] + 1,
                                         self.position[1] - 1], self.owner):
                 if self.position[1] - 1 == 0:
-                    moves += [self.position[0], "Q"],
-                    moves += [self.position[0], "N"],
-                    moves += [self.position[0], "R"],
-                    moves += [self.position[0], "B"],
+                    moves += [self.position[0] + 1, "Q"],
+                    moves += [self.position[0] + 1, "N"],
+                    moves += [self.position[0] + 1, "R"],
+                    moves += [self.position[0] + 1, "B"],
                 else:
                     moves += [self.position[0] + 1, self.position[1] - 1],
             if (board.check_if_opponent([self.position[0] - 1,
                                          self.position[1] - 1], self.owner)):
                 if self.position[1] - 1 == 0:
-                    moves += [self.position[0], "Q"],
-                    moves += [self.position[0], "N"],
-                    moves += [self.position[0], "R"],
-                    moves += [self.position[0], "B"],
+                    moves += [self.position[0] - 1, "Q"],
+                    moves += [self.position[0] - 1, "N"],
+                    moves += [self.position[0] - 1, "R"],
+                    moves += [self.position[0] - 1, "B"],
                 else:
                     moves += [self.position[0] - 1, self.position[1] - 1],
             if board.en_passant and self.owner != board.en_passant.owner:
@@ -819,12 +818,9 @@ class Game():
         the owner of that piece. Handles captures."""
         if piece.owner != self.current_turn:
             raise Exception
-        #print("__________________________")
-        #print("MOVE: "+str(piece)+" @ "+str(piece.position)+" moving to "+str(to_position))
-        #print("__________________________")
         if (isinstance(piece, Pawn) or
-           self.board.get_piece_at_position(to_position)):
-           self.fifty_move_rule = 0
+                self.board.get_piece_at_position(to_position)):
+            self.fifty_move_rule = 0
         else:
             self.fifty_move_rule += 1
         self.board.make_move(piece, to_position)
@@ -867,8 +863,8 @@ class Game():
                 return True
 
         moves_list = self.board.get_all_legal_moves(self.current_turn)
-        if len(moves_list) == 0 and not self.board.is_in_check(self.current_turn):
+        if (len(moves_list) == 0 and
+                not self.board.is_in_check(self.current_turn)):
             return True
-
 
         return False
