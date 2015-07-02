@@ -581,6 +581,16 @@ class Board:
             self.board[xy_to_num(pos)] = piece
             self.pieces += piece,
 
+    def undo_move(self):
+        """Restores the board to one move prior. Returns None if no
+        moves have been made yet."""
+        piece = self.get_piece_at_position(self.last_move_new_position)
+        self.remove_from_board(self.last_move_new_position)
+        piece.position = self.last_move_prev_position
+        self.add_to_board(piece)
+        if self.last_move_captured_piece:
+            self.add_to_board(self.last_move_captured_piece)
+
     def remove_from_board(self, position):
         """Removes the piece from the board, using the passed in position.
         Returns None if no piece was removed. Otherwise returns the piece."""
@@ -622,7 +632,7 @@ class Board:
         in a list of [piece, move_position] format."""
         legal_moves = []
         for piece in self.pieces:
-            if piece.owner == owner:
+            if piece.owner.color is owner.color:
                 for move in piece.get_legal_moves(self, True):
                     legal_moves += [piece, move],
         return legal_moves
@@ -806,6 +816,13 @@ class Game():
         self.board.add_to_board(black_queen)
         self.board.add_to_board(black_king)
 
+    def change_turn(self):
+        """Switches the turn."""
+        if self.current_turn == self.white:
+            self.current_turn = self.black
+        else:
+            self.current_turn = self.white
+
     def make_random_move(self):
         """Fetches the current players list of possible moves,
         and then chooses and executes one at random."""
@@ -824,10 +841,7 @@ class Game():
         else:
             self.fifty_move_rule += 1
         self.board.make_move(piece, to_position)
-        if self.current_turn == self.white:
-            self.current_turn = self.black
-        else:
-            self.current_turn = self.white
+        self.change_turn()
 
     def checkmate(self):
         """Returns the winner if checkmate, None otherwise."""
